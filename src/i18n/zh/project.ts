@@ -11,7 +11,7 @@ export default {
   my_templete: '我的模板',
   template_market: '模板市场',
 
-  // items 
+  // items
   release: '已发布',
   unreleased: '未发布',
   last_edit: '最后编辑'
