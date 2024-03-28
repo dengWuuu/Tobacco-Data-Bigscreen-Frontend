@@ -119,8 +119,6 @@ import shuffle from 'lodash/shuffle'
 import { carouselInterval } from '@/settings/designSetting'
 import { useSystemStore } from '@/store/modules/systemStore/systemStore'
 import { SystemStoreUserInfoEnum, SystemStoreEnum } from '@/store/modules/systemStore/systemStore.d'
-import { GoThemeSelect } from '@/components/GoThemeSelect'
-import { GoLangSelect } from '@/components/GoLangSelect'
 import { LayoutHeader } from '@/layout/components/LayoutHeader'
 import { LayoutFooter } from '@/layout/components/LayoutFooter'
 import { PageEnum } from '@/enums/pageEnum'
@@ -211,7 +209,7 @@ const handleSubmit = async (e: Event) => {
         const { tokenValue, tokenName } = res.data.token
         const { nickname, username, id } = res.data.userinfo
 
-        // 存储到 pinia 
+        // 存储到 pinia
         systemStore.setItem(SystemStoreEnum.USER_INFO, {
           [SystemStoreUserInfoEnum.USER_TOKEN]: tokenValue,
           [SystemStoreUserInfoEnum.TOKEN_NAME]: tokenName,
@@ -220,7 +218,7 @@ const handleSubmit = async (e: Event) => {
           [SystemStoreUserInfoEnum.NICK_NAME]: nickname,
           t
         })
-        
+
         window['$message'].success(t('login.login_success'))
         routerTurnByName(PageEnum.BASE_HOME_NAME, true)
       }
