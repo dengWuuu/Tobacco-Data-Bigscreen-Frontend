@@ -101,11 +101,3 @@ export const http = (type?: RequestHttpEnum) => {
 * build: 影响项目构建或依赖修改
 * style: 不影响程序逻辑的代码修改
 * chore: 不属于以上类型的其他类型(日常事务)
-
-## 交流
-
-QQ 群：1030129384
-
-![QQ群](readme/go-view-qq.png)
-
-![渲染海报](readme/logo-poster.png)

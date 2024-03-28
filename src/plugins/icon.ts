@@ -310,5 +310,5 @@ const carbon = {
 
 export const icon = {
   ionicons5,
-  carbon
+  carbon,
 }

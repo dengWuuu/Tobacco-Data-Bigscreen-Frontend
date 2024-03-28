@@ -57,18 +57,6 @@ const typeList = shallowRef([
     key: ChartEnum.CHART_HOME_NAME,
     icon: FishIcon,
     disabled: false
-  },
-  {
-    title: renderLang('project.my_templete'),
-    key: PageEnum.BASE_HOME_TEMPLATE_NAME,
-    icon: ObjectStorageIcon,
-    disabled: true
-  },
-  {
-    title: renderLang('project.template_market'),
-    key: PageEnum.BASE_HOME_TEMPLATE_MARKET_NAME,
-    icon: StoreIcon,
-    disabled: true
   }
 ])
 
