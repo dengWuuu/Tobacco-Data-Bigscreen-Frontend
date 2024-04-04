@@ -60,6 +60,48 @@ export const menuOptionsInit = () => {
                             key: PageEnum.BASE_HOME_EMPLOYEE_MANAGEMENT_NAME,
                             icon: renderIcon(ObjectStorageIcon),
                         },
+                        {
+                            label: () =>
+                                h(
+                                    RouterLink,
+                                    {
+                                        to: {
+                                            name: PageEnum.BASE_HOME_SPU_MANAGEMENT_NAME,
+                                        },
+                                    },
+                                    {default: () => t('project.spu_management')}
+                                ),
+                            key: PageEnum.BASE_HOME_SPU_MANAGEMENT_NAME,
+                            icon: renderIcon(GridIcon),
+                        },
+                        {
+                            label: () =>
+                                h(
+                                    RouterLink,
+                                    {
+                                        to: {
+                                            name: PageEnum.BASE_HOME_SPU_TYPE_MANAGEMENT_NAME,
+                                        },
+                                    },
+                                    {default: () => t('project.spu_type_management')}
+                                ),
+                            key: PageEnum.BASE_HOME_SPU_TYPE_MANAGEMENT_NAME,
+                            icon: renderIcon(ObjectStorageIcon),
+                        },
+                        {
+                            label: () =>
+                                h(
+                                    RouterLink,
+                                    {
+                                        to: {
+                                            name: PageEnum.BASE_HOME_SHOP_MANAGEMENT_NAME,
+                                        },
+                                    },
+                                    {default: () => t('project.shop_management')}
+                                ),
+                            key: PageEnum.BASE_HOME_SHOP_MANAGEMENT_NAME,
+                            icon: renderIcon(StoreIcon),
+                        },
                     ],
                 },
             ],

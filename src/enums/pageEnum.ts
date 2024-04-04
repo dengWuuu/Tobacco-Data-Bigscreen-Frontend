@@ -43,17 +43,22 @@ export enum PageEnum {
     BASE_HOME_ITEMS = '/project/items',
     BASE_HOME_ITEMS_NAME = 'Project-Items',
 
-    // 我的模板
-    BASE_HOME_TEMPLATE = '/project/my-template',
-    BASE_HOME_TEMPLATE_NAME = 'Project-My-Template',
-
     // 员工管理
     BASE_HOME_EMPLOYEE_MANAGEMENT = '/project/employee-management',
     BASE_HOME_EMPLOYEE_MANAGEMENT_NAME = 'Project-Employee-Management',
 
-    // 模板市场
-    BASE_HOME_TEMPLATE_MARKET = '/project/template-market',
-    BASE_HOME_TEMPLATE_MARKET_NAME = 'Project-Template-Market',
+    // SPU管理
+    BASE_HOME_SPU_MANAGEMENT = '/project/spu-management',
+    BASE_HOME_SPU_MANAGEMENT_NAME = 'Project-Spu-Management',
+
+    // SPU Type 管理
+    BASE_HOME_SPU_TYPE_MANAGEMENT = '/project/spu-type-management',
+    BASE_HOME_SPU_TYPE_MANAGEMENT_NAME = 'Project-Spu-Type-Management',
+
+    // Shop 管理
+    BASE_HOME_SHOP_MANAGEMENT = '/project/shop-management',
+    BASE_HOME_SHOP_MANAGEMENT_NAME = 'Project-Shop-Management',
+
 
     // 错误
     ERROR_PAGE_NAME_403 = 'ErrorPage403',

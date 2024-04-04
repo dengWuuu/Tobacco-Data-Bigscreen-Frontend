@@ -5,12 +5,15 @@ export default {
     create_failure: '新建失败，请稍后重试！',
     create_tip: '从哪里出发好呢？',
     project: '项目',
-    my: '我的',
+    my: '功能',
     new_project: '新项目',
     all_project: '全部项目',
     my_templete: '我的模板',
     template_market: '模板市场',
     employee_management: "员工管理",
+    spu_management: "商品管理",
+    spu_type_management: "商品类型管理",
+    shop_management: "店铺管理",
 
     // items
     release: '已发布',
