@@ -112,6 +112,16 @@ const deleteSelectUser = async () => {
     getShopList(shopArr.value.length > 1 ? pageNo.value : pageNo.value - 1)
   }
 }
+
+// 编辑用户按钮
+const updateUser = (row: Shop) => {
+  drawer.value = true
+  Object.assign(shopParams, row)
+  nextTick(() => {
+    formRef.value.clearValidate('base')
+    formRef.value.clearValidate('detail')
+  })
+}
 const selectChange = (value: any) => {
   selectIdArr.value = value
 }
@@ -152,7 +162,7 @@ const cancel = () => {
         <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip></el-table-column>
         <el-table-column label="操作" width="300px" align="center">
           <template #="{ row, $index }">
-            <el-button type="primary" size="small" :icon="Edit">编辑</el-button>
+            <el-button type="primary" size="small" :icon="Edit" @click="updateUser(row)">编辑</el-button>
             <el-popconfirm @confirm="deleteUser(row.id)" :title="`你确定删除${row.detail}`" width="260px">
               <template #reference>
                 <el-button type="danger" size="small" :icon="Delete">删除</el-button>
