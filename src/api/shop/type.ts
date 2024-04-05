@@ -3,6 +3,7 @@ export type Shops = Shop[]
 export interface Shop {
     id?: string
     base?: string
+    detail?: string
     createTime?: string
     updateTime?: string
 }

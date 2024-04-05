@@ -2,14 +2,24 @@
 import {http} from '@/api/http'
 import {ModuleTypeEnum, RequestHttpEnum} from '@/enums/httpEnum'
 import {httpErrorHandle} from '@/utils'
-import {ShopResponseData} from "@/api/shop/type";
+import {Shop, ShopResponseData} from "@/api/shop/type";
 
-export const reqUserInfo = (page: number, size: number, shopName: string) => {
+export const reqShopList = (page: number, size: number, detail: string) => {
     try {
-        return http(RequestHttpEnum.GET)(`${ModuleTypeEnum.SHOP}/list`, {page, size, shopName});
+        return http(RequestHttpEnum.GET)<ShopResponseData>(`${ModuleTypeEnum.SHOP}/list`, {page, size, detail});
     } catch (err) {
         httpErrorHandle()
     }
 }
 
+export const reqAddOrUpdateShop = (data: Shop) => {
+    return http(RequestHttpEnum.POST)(`${ModuleTypeEnum.SHOP}/update`, data)
+}
 
+export const reqRemoveShop = (shopId: string) => {
+    return http(RequestHttpEnum.DELETE)(`${ModuleTypeEnum.SHOP}/remove`, {id: shopId})
+}
+
+export const reqDeleteSelectShop = (idList: string[]) => {
+    return http(RequestHttpEnum.DELETE)(`${ModuleTypeEnum.SHOP}/remove-batch`, {ids: idList})
+}

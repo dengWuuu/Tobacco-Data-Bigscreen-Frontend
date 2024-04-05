@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import {ref, onMounted, reactive, nextTick} from 'vue'
 import {Shop, ShopResponseData, Shops} from "@/api/shop/type";
-import {reqUserInfo} from "@/api/shop";
+import {reqShopList, reqAddOrUpdateShop, reqRemoveShop, reqDeleteSelectShop} from "@/api/shop";
 import {httpErrorHandle} from "@/utils";
-import {Edit, Delete, User} from '@element-plus/icons-vue'
+import {Edit, Delete} from '@element-plus/icons-vue'
+import {ElMessage} from "element-plus";
 
 let pageNo = ref<number>(1)
 
@@ -14,7 +15,8 @@ let drawer = ref<boolean>(false)
 
 let shopParams = reactive<Shop>({
   id: '',
-  base: ''
+  base: '',
+  detail: ''
 })
 
 // 表单中东非数据
@@ -29,21 +31,25 @@ onMounted(() => {
 })
 
 // 获取用户功能
-const getShopList = async () => {
-  let res = await reqUserInfo(
-      (pageNo.value || 1),
+const getShopList = async (pager = 1) => {
+  pageNo.value = pager
+  let res = await reqShopList(
+      pageNo.value,
       pageSize.value,
       shopName.value,
   );
-  console.log(res)
   if (res && res.data) {
+    let data: ShopResponseData = res.data
     if (res.code === 200) {
-      total.value = res.data.total
-      shopArr.value = res.data.shops
+      total.value = data.total
+      shopArr.value = data.shops
     }
     return
   }
   httpErrorHandle()
+}
+const handler = () => {
+  getShopList()
 }
 
 
@@ -51,14 +57,69 @@ const getShopList = async () => {
 const addUser = () => {
   drawer.value = true
   Object.assign(shopParams, {
-    id: 0,
-    base: ''
+    id: '',
+    base: '',
+    detail: ''
   })
   nextTick(() => {
-    formRef.value.clearValidate('username')
-    formRef.value.clearValidate('name')
-    formRef.value.clearValidate('password')
+    formRef.value.clearValidate('base')
+    formRef.value.clearValidate('detail')
   })
+}
+
+
+// 提交表单对应的数据给后端
+const save = async () => {
+  formRef.value.validate()
+  let res: any = await reqAddOrUpdateShop(shopParams)
+  if (res.code === 200) {
+    drawer.value = false
+    ElMessage({
+      type: 'success',
+      message: shopParams.id ? '更新成功' : '添加成功',
+    })
+    window.location.reload()
+  } else {
+    drawer.value = false
+    ElMessage({
+      type: 'error',
+      message: shopParams.id ? '更新失败' : '添加失败',
+    })
+  }
+}
+
+
+// 删除用户确定
+const deleteUser = async (shopId: string) => {
+  let res: any = await reqRemoveShop(shopId)
+  if (res.code === 200) {
+    ElMessage({type: 'success', message: '删除成功'})
+    getShopList(shopArr.value.length > 1 ? pageNo.value : pageNo.value - 1)
+  }
+}
+
+
+let selectIdArr = ref<Shop[]>([])
+
+// 删除选择用户
+const deleteSelectUser = async () => {
+  let idList: any = selectIdArr.value.map((item) => {
+    return item.id
+  })
+  let res: any = await reqDeleteSelectShop(idList)
+  if (res.code === 200) {
+    ElMessage({type: 'success', message: '删除成功'})
+    getShopList(shopArr.value.length > 1 ? pageNo.value : pageNo.value - 1)
+  }
+}
+const selectChange = (value: any) => {
+  selectIdArr.value = value
+}
+
+
+// 取消添加商铺的表单
+const cancel = () => {
+  drawer.value = false
 }
 </script>
 <template>
@@ -77,22 +138,22 @@ const addUser = () => {
     </el-card>
     <el-card style="margin: 10px 0">
       <el-button type="primary" size="default" @click="addUser">添加用户</el-button>
-      <el-button type="danger" size="default">批量删除
+      <el-button type="danger" size="default"
+                 :disabled="selectIdArr.length ? false : true"
+                 @click="deleteSelectUser">批量删除
       </el-button>
-      <el-table style="margin: 10px 0" :data="shopArr" border>
+      <el-table style="margin: 10px 0" :data="shopArr" @selection-change="selectChange" border>
         <el-table-column type="selection" align="center"></el-table-column>
         <el-table-column label="#" align="center" type="index"></el-table-column>
-        <el-table-column label="id" align="center" prop="id"></el-table-column>
-        <el-table-column label="用户名字" align="center" prop="id" show-overflow-tooltip></el-table-column>
-        <el-table-column label="用户名称" align="center" prop="base" show-overflow-tooltip></el-table-column>
-        <el-table-column label="用户角色" align="center" prop="roleName" show-overflow-tooltip></el-table-column>
+        <el-table-column label="员工工号" align="center" prop="id"></el-table-column>
+        <el-table-column label="商店地区" align="center" prop="base" show-overflow-tooltip></el-table-column>
+        <el-table-column label="商店地址" align="center" prop="detail" show-overflow-tooltip></el-table-column>
         <el-table-column label="创建时间" align="center" prop="createTime" show-overflow-tooltip></el-table-column>
         <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip></el-table-column>
         <el-table-column label="操作" width="300px" align="center">
           <template #="{ row, $index }">
-            <el-button size="small" :icon="User">分配角色</el-button>
             <el-button type="primary" size="small" :icon="Edit">编辑</el-button>
-            <el-popconfirm :title="`你确定删除${row.shopName}`" width="260px">
+            <el-popconfirm @confirm="deleteUser(row.id)" :title="`你确定删除${row.detail}`" width="260px">
               <template #reference>
                 <el-button type="danger" size="small" :icon="Delete">删除</el-button>
               </template>
@@ -109,38 +170,27 @@ const addUser = () => {
           layout="prev, pager, next, jumper, -> , sizes, total"
           :total="total"
           @current-change="getShopList"
-          @size-change="getShopList"
+          @size-change="handler"
       />
     </el-card>
     <el-drawer v-model="drawer">
       <template #header>
-        <h4>{{ shopParams.id ? '更新用户' : '添加用户' }}</h4>
+        <h4>{{ shopParams.id ? '更新商铺' : '添加商铺' }}</h4>
       </template>
       <template #default>
-        <el-form ref="formRef">
-          <el-form-item label="用户姓名" prop="username">
-            <el-input
-                placeholder="请您输入用户姓名"
-
-            ></el-input>
+        <el-form :model="shopParams" ref="formRef">
+          <el-form-item label="商铺地区">
+            <el-input placeholder="请您输入商铺地区" v-model="shopParams.base"></el-input>
           </el-form-item>
-          <el-form-item label="用户昵称" prop="name">
-            <el-input
-                placeholder="请您输入用户昵称"
-
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="用户密码" prop="password">
-            <el-input
-                placeholder="请您输入用户密码"
-            ></el-input>
+          <el-form-item label="商铺地址">
+            <el-input placeholder="请您输入商铺地址" v-model="shopParams.detail"></el-input>
           </el-form-item>
         </el-form>
       </template>
       <template #footer>
         <div style="flex: auto">
-          <el-button>取消</el-button>
-          <el-button type="primary">确定</el-button>
+          <el-button @click="cancel">取消</el-button>
+          <el-button type="primary" @click="save">确定</el-button>
         </div>
       </template>
     </el-drawer>

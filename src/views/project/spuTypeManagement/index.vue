@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ref, onMounted, reactive, nextTick} from 'vue'
 import {Shop, ShopResponseData, Shops} from "@/api/shop/type";
-import {reqUserInfo} from "@/api/shop";
+import {reqShopList} from "@/api/shop";
 import {httpErrorHandle} from "@/utils";
 
 let pageNo = ref<number>(1)
@@ -25,7 +25,7 @@ let keyword = ref<string>('')
 // 获取用户功能
 const getHasUser = async (pager = 1) => {
   pageNo.value = pager
-  let res = await reqUserInfo(
+  let res = await reqShopList(
       pageNo.value,
       pageSize.value,
       keyword.value,
