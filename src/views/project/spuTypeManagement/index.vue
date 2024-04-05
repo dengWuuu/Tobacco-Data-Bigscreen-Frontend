@@ -23,7 +23,7 @@ let total = ref<number>(0)
     </el-card>
     <el-card style="margin: 10px 0">
       <el-button type="primary" size="default">
-        添加用户
+        添加员工
       </el-button>
       <el-button
           type="danger"

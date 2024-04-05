@@ -1,11 +1,64 @@
 <script setup lang="ts">
 import {ref, onMounted, reactive, nextTick} from 'vue'
+import {Shop, ShopResponseData, Shops} from "@/api/shop/type";
+import {reqUserInfo} from "@/api/shop";
+import {httpErrorHandle} from "@/utils";
 
 let pageNo = ref<number>(1)
 
 let pageSize = ref<number>(5)
 
 let total = ref<number>(0)
+let drawer = ref<boolean>(false)
+
+let shopParams = reactive<Shop>({
+  id: '',
+  base: ''
+})
+
+// 表单中东非数据
+let shopArr = ref<Shops>([])
+// 表单信息
+let formRef = ref<any>()
+let keyword = ref<string>('')
+
+// 获取用户功能
+const getHasUser = async (pager = 1) => {
+  pageNo.value = pager
+  let res = await reqUserInfo(
+      pageNo.value,
+      pageSize.value,
+      keyword.value,
+  );
+  if (res && res.data) {
+    console.log(res)
+    if (res.code === 200) {
+      total.value = res.data.total
+      shopArr.value = res.data.shops
+    }
+    return
+  }
+  httpErrorHandle()
+}
+// 挂载 getHasUser
+onMounted(() => {
+  getHasUser()
+})
+
+
+// 添加用户按钮功能
+const addUser = () => {
+  drawer.value = true
+  Object.assign(shopParams, {
+    id: 0,
+    base: ''
+  })
+  nextTick(() => {
+    formRef.value.clearValidate('username')
+    formRef.value.clearValidate('name')
+    formRef.value.clearValidate('password')
+  })
+}
 </script>
 <template>
   <div>
@@ -22,7 +75,7 @@ let total = ref<number>(0)
       </el-form>
     </el-card>
     <el-card style="margin: 10px 0">
-      <el-button type="primary" size="default">
+      <el-button type="primary" size="default" @click="addUser">
         添加用户
       </el-button>
       <el-button
@@ -33,6 +86,7 @@ let total = ref<number>(0)
       </el-button>
       <el-table
           style="margin: 10px 0"
+          :data="shopArr"
           border
       >
         <el-table-column type="selection" align="center"></el-table-column>
@@ -41,13 +95,13 @@ let total = ref<number>(0)
         <el-table-column
             label="用户名字"
             align="center"
-            prop="username"
+            prop="id"
             show-overflow-tooltip
         ></el-table-column>
         <el-table-column
             label="用户名称"
             align="center"
-            prop="name"
+            prop="base"
             show-overflow-tooltip
         ></el-table-column>
         <el-table-column
@@ -70,26 +124,12 @@ let total = ref<number>(0)
         ></el-table-column>
         <el-table-column label="操作" width="300px" align="center">
           <template #="{ row, $index }">
-            <el-button size="small" icon="User">
-              分配角色
+            <el-button size="small" icon="User">分配角色</el-button>
+            <el-button type="primary" size="small" icon="Edit">编辑
             </el-button>
-            <el-button
-                type="primary"
-                size="small"
-                icon="Edit"
-
-            >
-              编辑
-            </el-button>
-            <el-popconfirm
-                :title="`你确定删除${row.username}`"
-                width="260px"
-
-            >
+            <el-popconfirm :title="`你确定删除${row.username}`" width="260px">
               <template #reference>
-                <el-button type="danger" size="small" icon="Delete">
-                  删除
-                </el-button>
+                <el-button type="danger" size="small" icon="Delete">删除</el-button>
               </template>
             </el-popconfirm>
           </template>
@@ -105,9 +145,9 @@ let total = ref<number>(0)
 
       />
     </el-card>
-    <el-drawer>
+    <el-drawer v-model="drawer">
       <template #header>
-        <h4></h4>
+        <h4>{{ shopParams.id ? '更新用户' : '添加用户' }}</h4>
       </template>
       <template #default>
         <el-form ref="formRef">
