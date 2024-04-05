@@ -3,6 +3,7 @@ import {ref, onMounted, reactive, nextTick} from 'vue'
 import {Shop, ShopResponseData, Shops} from "@/api/shop/type";
 import {reqUserInfo} from "@/api/shop";
 import {httpErrorHandle} from "@/utils";
+import {Edit, Delete, User} from '@element-plus/icons-vue'
 
 let pageNo = ref<number>(1)
 
@@ -20,18 +21,22 @@ let shopParams = reactive<Shop>({
 let shopArr = ref<Shops>([])
 // 表单信息
 let formRef = ref<any>()
-let keyword = ref<string>('')
+let shopName = ref<string>('')
+
+// 挂载 getShopList
+onMounted(() => {
+  getShopList()
+})
 
 // 获取用户功能
-const getHasUser = async (pager = 1) => {
-  pageNo.value = pager
+const getShopList = async () => {
   let res = await reqUserInfo(
-      pageNo.value,
+      (pageNo.value || 1),
       pageSize.value,
-      keyword.value,
+      shopName.value,
   );
+  console.log(res)
   if (res && res.data) {
-    console.log(res)
     if (res.code === 200) {
       total.value = res.data.total
       shopArr.value = res.data.shops
@@ -40,10 +45,6 @@ const getHasUser = async (pager = 1) => {
   }
   httpErrorHandle()
 }
-// 挂载 getHasUser
-onMounted(() => {
-  getHasUser()
-})
 
 
 // 添加用户按钮功能
@@ -75,66 +76,31 @@ const addUser = () => {
       </el-form>
     </el-card>
     <el-card style="margin: 10px 0">
-      <el-button type="primary" size="default" @click="addUser">
-        添加用户
+      <el-button type="primary" size="default" @click="addUser">添加用户</el-button>
+      <el-button type="danger" size="default">批量删除
       </el-button>
-      <el-button
-          type="danger"
-          size="default"
-      >
-        批量删除
-      </el-button>
-      <el-table
-          style="margin: 10px 0"
-          :data="shopArr"
-          border
-      >
+      <el-table style="margin: 10px 0" :data="shopArr" border>
         <el-table-column type="selection" align="center"></el-table-column>
         <el-table-column label="#" align="center" type="index"></el-table-column>
         <el-table-column label="id" align="center" prop="id"></el-table-column>
-        <el-table-column
-            label="用户名字"
-            align="center"
-            prop="id"
-            show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-            label="用户名称"
-            align="center"
-            prop="base"
-            show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-            label="用户角色"
-            align="center"
-            prop="roleName"
-            show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-            label="创建时间"
-            align="center"
-            prop="createTime"
-            show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-            label="更新时间"
-            align="center"
-            prop="updateTime"
-            show-overflow-tooltip
-        ></el-table-column>
+        <el-table-column label="用户名字" align="center" prop="id" show-overflow-tooltip></el-table-column>
+        <el-table-column label="用户名称" align="center" prop="base" show-overflow-tooltip></el-table-column>
+        <el-table-column label="用户角色" align="center" prop="roleName" show-overflow-tooltip></el-table-column>
+        <el-table-column label="创建时间" align="center" prop="createTime" show-overflow-tooltip></el-table-column>
+        <el-table-column label="更新时间" align="center" prop="updateTime" show-overflow-tooltip></el-table-column>
         <el-table-column label="操作" width="300px" align="center">
           <template #="{ row, $index }">
-            <el-button size="small" icon="User">分配角色</el-button>
-            <el-button type="primary" size="small" icon="Edit">编辑
-            </el-button>
-            <el-popconfirm :title="`你确定删除${row.username}`" width="260px">
+            <el-button size="small" :icon="User">分配角色</el-button>
+            <el-button type="primary" size="small" :icon="Edit">编辑</el-button>
+            <el-popconfirm :title="`你确定删除${row.shopName}`" width="260px">
               <template #reference>
-                <el-button type="danger" size="small" icon="Delete">删除</el-button>
+                <el-button type="danger" size="small" :icon="Delete">删除</el-button>
               </template>
             </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
+
       <el-pagination
           v-model:current-page="pageNo"
           v-model:page-size="pageSize"
@@ -142,7 +108,8 @@ const addUser = () => {
           :background="true"
           layout="prev, pager, next, jumper, -> , sizes, total"
           :total="total"
-
+          @current-change="getShopList"
+          @size-change="getShopList"
       />
     </el-card>
     <el-drawer v-model="drawer">

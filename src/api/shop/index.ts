@@ -4,9 +4,9 @@ import {ModuleTypeEnum, RequestHttpEnum} from '@/enums/httpEnum'
 import {httpErrorHandle} from '@/utils'
 import {ShopResponseData} from "@/api/shop/type";
 
-export const reqUserInfo = (page: number, limit: number, username: string) => {
+export const reqUserInfo = (page: number, size: number, shopName: string) => {
     try {
-        return http(RequestHttpEnum.GET)(`${ModuleTypeEnum.SHOP}/list`);
+        return http(RequestHttpEnum.GET)(`${ModuleTypeEnum.SHOP}/list`, {page, size, shopName});
     } catch (err) {
         httpErrorHandle()
     }

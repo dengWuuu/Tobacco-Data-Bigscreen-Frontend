@@ -11,6 +11,12 @@ dependencies:
   '@amap/amap-jsapi-types':
     specifier: ^0.0.8
     version: 0.0.8
+  '@element-plus/icons':
+    specifier: ^0.0.11
+    version: 0.0.11
+  '@element-plus/icons-vue':
+    specifier: ^2.3.1
+    version: 2.3.1(vue@3.4.21)
   '@iconify/json':
     specifier: ^2.2.158
     version: 2.2.195
@@ -756,6 +762,11 @@ packages:
       vue: ^3.2.0
     dependencies:
       vue: 3.4.21(typescript@4.6.3)
+    dev: false
+
+  /@element-plus/icons@0.0.11:
+    resolution: {integrity: sha512-iKQXSxXu131Ai+I9Ymtcof9WId7kaXvB1+WRfAfpQCW7UiAMYgdNDqb/u0hgTo2Yq3MwC4MWJnNuTBEpG8r7+A==}
+    deprecated: Please use @element-plus/icons-vue instead.
     dev: false
 
   /@emmetio/abbreviation@2.3.3:

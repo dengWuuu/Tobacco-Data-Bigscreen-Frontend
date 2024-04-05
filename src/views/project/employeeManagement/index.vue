@@ -31,7 +31,6 @@ const getHasUser = async (pager = 1) => {
       keyword.value,
   );
   if (res && res.data) {
-    console.log(res)
     if (res.code === 200) {
       total.value = res.data.total
       shopArr.value = res.data.shops

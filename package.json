@@ -16,6 +16,8 @@
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@amap/amap-jsapi-types": "^0.0.8",
+    "@element-plus/icons": "^0.0.11",
+    "@element-plus/icons-vue": "^2.3.1",
     "@iconify/json": "^2.2.158",
     "@types/color": "^3.0.3",
     "@types/crypto-js": "^4.1.1",
