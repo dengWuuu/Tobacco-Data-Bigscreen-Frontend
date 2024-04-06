@@ -2,7 +2,8 @@
 export enum ModuleTypeEnum {
     SYSTEM = 'sys',
     PROJECT = 'project',
-    SHOP = 'shop'
+    SHOP = 'shop',
+    SPU_TYPE = 'spu_type'
 }
 
 // 请求结果集

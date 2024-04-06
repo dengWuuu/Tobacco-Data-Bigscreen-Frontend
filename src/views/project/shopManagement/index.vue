@@ -23,7 +23,11 @@ let shopParams = reactive<Shop>({
 let shopArr = ref<Shops>([])
 // 表单信息
 let formRef = ref<any>()
-let shopName = ref<string>('')
+
+
+// 用于条件查询的字段
+let shopBase = ref<string>('')
+let shopDetail = ref<string>('')
 
 // 挂载 getShopList
 onMounted(() => {
@@ -36,7 +40,8 @@ const getShopList = async (pager = 1) => {
   let res = await reqShopList(
       pageNo.value,
       pageSize.value,
-      shopName.value,
+      shopDetail.value,
+      shopBase.value
   );
   if (res && res.data) {
     let data: ShopResponseData = res.data
@@ -122,6 +127,12 @@ const updateUser = (row: Shop) => {
     formRef.value.clearValidate('detail')
   })
 }
+
+const search = () => {
+  getShopList()
+  shopBase.value = ''
+  shopDetail.value = ''
+}
 const selectChange = (value: any) => {
   selectIdArr.value = value
 }
@@ -131,31 +142,39 @@ const selectChange = (value: any) => {
 const cancel = () => {
   drawer.value = false
 }
+
 </script>
 <template>
   <div>
 
     <el-card style="height: 80px">
       <el-form :inline="true" class="form">
-        <el-form-item label="用户名:">
-          <el-input placeholder="请你输入搜索用户名"></el-input>
+        <el-form-item label="店铺具体位置:">
+          <el-input placeholder="输入店铺具体位置：" v-model="shopDetail"></el-input>
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" size="default">搜索</el-button>
-          <el-button size="default">重置</el-button>
+        <el-form-item label="店铺区:">
+          <el-input placeholder="输入店铺区：" v-model="shopBase"></el-input>
+        </el-form-item>
+        <el-form-item class="buttonFormItem">
+          <el-button type="primary"
+                     size="default"
+                     :disabled="(shopBase.length==0)&&(shopDetail.length==0)"
+                     @click="search">
+            搜索
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
     <el-card style="margin: 10px 0">
       <el-button type="primary" size="default" @click="addUser">添加用户</el-button>
       <el-button type="danger" size="default"
-                 :disabled="selectIdArr.length ? false : true"
+                 :disabled="!selectIdArr.length"
                  @click="deleteSelectUser">批量删除
       </el-button>
       <el-table style="margin: 10px 0" :data="shopArr" @selection-change="selectChange" border>
         <el-table-column type="selection" align="center"></el-table-column>
         <el-table-column label="#" align="center" type="index"></el-table-column>
-        <el-table-column label="员工工号" align="center" prop="id"></el-table-column>
+        <el-table-column label="商店ID" align="center" prop="id"></el-table-column>
         <el-table-column label="商店地区" align="center" prop="base" show-overflow-tooltip></el-table-column>
         <el-table-column label="商店地址" align="center" prop="detail" show-overflow-tooltip></el-table-column>
         <el-table-column label="创建时间" align="center" prop="createTime" show-overflow-tooltip></el-table-column>
@@ -236,7 +255,14 @@ const cancel = () => {
 <style lang="scss" scoped>
 .form {
   display: flex;
-  justify-content: space-between;
   align-items: center;
 }
+
+.buttonFormItem {
+  // 让按钮居右
+  margin-left: auto;
+
+}
+
+
 </style>
