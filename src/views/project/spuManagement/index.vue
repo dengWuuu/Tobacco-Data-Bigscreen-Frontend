@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {ref, onMounted, reactive, nextTick} from 'vue'
-import {reqAddOrUpdateSpu, reqSpuList} from "@/api/spu";
+import {reqAddOrUpdateSpu, reqSpuList, reqRemoveSpu, reqDeleteSelectSpu} from "@/api/spu";
 import {httpErrorHandle} from "@/utils";
 import {Spu, Spus, SpuResponseData} from "@/api/spu/type";
 import {Edit, Delete} from '@element-plus/icons-vue'
-import {SpuTypeResponseData, SpuTypes} from "@/api/spu_type/type";
-import {reqAddOrUpdateSpuType, reqSpuTypeList} from "@/api/spu_type";
+import {SpuType, SpuTypeResponseData, SpuTypes} from "@/api/spu_type/type";
+import {reqAddOrUpdateSpuType, reqDeleteSelectSpuType, reqRemoveSpuType, reqSpuTypeList} from "@/api/spu_type";
 import {ElMessage} from "element-plus";
 
 let pageNo = ref<number>(1)
@@ -112,6 +112,23 @@ const save = async () => {
     })
   }
 }
+const updateUser = (row: SpuType) => {
+  drawer.value = true
+  Object.assign(spuParams, row)
+  nextTick(() => {
+    formRef.value.clearValidate('skuName')
+    formRef.value.clearValidate('type')
+    formRef.value.clearValidate('price')
+    formRef.value.clearValidate('purchasePrice')
+    formRef.value.clearValidate('image')
+    formRef.value.clearValidate('status')
+    formRef.value.clearValidate('num')
+  })
+}
+const search = () => {
+  getSpuList()
+  skuName.value = ''
+}
 
 // 取消添加商铺的表单
 const cancel = () => {
@@ -145,6 +162,30 @@ const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
   }
   return true
 }
+
+const deleteSpu = async (SpuId: string) => {
+  let res: any = await reqRemoveSpu(SpuId)
+  if (res.code === 200) {
+    ElMessage({type: 'success', message: '删除成功'})
+    getSpuList(spuArr.value.length > 1 ? pageNo.value : pageNo.value - 1)
+  }
+}
+
+let selectIdArr = ref<SpuType[]>([])
+const deleteSelectSpu = async () => {
+  let idList: any = selectIdArr.value.map((item) => {
+    return item.id
+  })
+  let res: any = await reqDeleteSelectSpu(idList)
+  if (res.code === 200) {
+    ElMessage({type: 'success', message: '删除成功'})
+    getSpuList(spuArr.value.length > 1 ? pageNo.value : pageNo.value - 1)
+  }
+}
+
+const selectChange = (value: any) => {
+  selectIdArr.value = value
+}
 </script>
 <template>
   <div>
@@ -152,11 +193,10 @@ const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
     <el-card style="height: 80px">
       <el-form :inline="true" class="form">
         <el-form-item label="商品名:">
-          <el-input placeholder="请你输入搜索商品名"></el-input>
+          <el-input placeholder="请你输入搜索商品名" v-model="skuName"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" size="default">搜索</el-button>
-          <el-button size="default">重置</el-button>
+          <el-button type="primary" size="default" @click="search">搜索</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -167,12 +207,14 @@ const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
       <el-button
           type="danger"
           size="default"
+          @click="deleteSelectSpu"
       >
         批量删除
       </el-button>
       <el-table
           style="margin: 10px 0"
           :data="spuArr"
+          @selection-change="selectChange"
           border
       >
         <el-table-column type="selection" align="center"></el-table-column>
@@ -238,9 +280,9 @@ const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
         ></el-table-column>
         <el-table-column label="操作" width="300px" align="center">
           <template #="{ row, $index }">
-            <el-button type="primary" size="small" :icon="Edit">编辑
+            <el-button type="primary" size="small" :icon="Edit" @click="updateUser(row)">编辑
             </el-button>
-            <el-popconfirm :title="`你确定删除${row.username}`" width="260px">
+            <el-popconfirm @confirm="deleteSpu(row.id)" :title="`你确定删除${row.skuName}`" width="260px">
               <template #reference>
                 <el-button type="danger" size="small" :icon="Delete">删除</el-button>
               </template>
