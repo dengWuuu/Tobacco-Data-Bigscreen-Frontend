@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import {ref, onMounted, reactive, nextTick} from 'vue'
-import {Shop, ShopResponseData, Shops} from "@/api/shop/type";
-import {reqShopList} from "@/api/shop";
+import {reqSpuList} from "@/api/spu";
 import {httpErrorHandle} from "@/utils";
+import {Spu, Spus, SpuResponseData} from "@/api/spu/type";
+import {Edit, Delete} from '@element-plus/icons-vue'
 
 let pageNo = ref<number>(1)
 
@@ -11,53 +12,57 @@ let pageSize = ref<number>(5)
 let total = ref<number>(0)
 let drawer = ref<boolean>(false)
 
-let shopParams = reactive<Shop>({
+let spuParams = reactive<Spu>({
   id: '',
-  base: ''
+  skuName: '',
+  type: 0,
+  price: 0,
+  purchasePrice: 0,
+  image: '',
+  status: 0,
+  num: 0,
 })
 
 // 表单中东非数据
-let shopArr = ref<Shops>([])
+let spuArr = ref<Spus>([])
 // 表单信息
 let formRef = ref<any>()
-let keyword = ref<string>('')
+let skuName = ref<string>('')
 
 // 获取用户功能
-const getHasUser = async (pager = 1) => {
+const getSpuList = async (pager = 1) => {
   pageNo.value = pager
-  let res = await reqShopList(
+  let res = await reqSpuList(
       pageNo.value,
       pageSize.value,
-      keyword.value,
+      skuName.value,
   );
   if (res && res.data) {
     console.log(res)
     if (res.code === 200) {
       total.value = res.data.total
-      shopArr.value = res.data.shops
+      spuArr.value = res.data.spus
     }
     return
   }
   httpErrorHandle()
 }
-// 挂载 getHasUser
+// 挂载
 onMounted(() => {
-  getHasUser()
+  getSpuList()
 })
 
+const getSpuType = (typeId: number) => {
+  if (typeId === 1) {
+    return '烟草'
+  }
+  if (typeId === 2) {
+    return '零食'
+  }
+}
 
 // 添加用户按钮功能
 const addUser = () => {
-  drawer.value = true
-  Object.assign(shopParams, {
-    id: 0,
-    base: ''
-  })
-  nextTick(() => {
-    formRef.value.clearValidate('username')
-    formRef.value.clearValidate('name')
-    formRef.value.clearValidate('password')
-  })
 }
 </script>
 <template>
@@ -86,50 +91,77 @@ const addUser = () => {
       </el-button>
       <el-table
           style="margin: 10px 0"
-          :data="shopArr"
+          :data="spuArr"
           border
       >
         <el-table-column type="selection" align="center"></el-table-column>
         <el-table-column label="#" align="center" type="index"></el-table-column>
-        <el-table-column label="id" align="center" prop="id"></el-table-column>
+        <el-table-column label="商品id" align="center" prop="id"></el-table-column>
         <el-table-column
-            label="用户名字"
+            label="商品名字"
             align="center"
-            prop="id"
+            prop="skuName"
             show-overflow-tooltip
         ></el-table-column>
         <el-table-column
-            label="用户名称"
+            label="商品类型"
             align="center"
-            prop="base"
+            prop="type"
+            show-overflow-tooltip
+        >
+          <template #default="scope">
+            {{ getSpuType(scope.row.type) }}
+          </template>
+        </el-table-column>
+        <el-table-column
+            label="商品价格"
+            align="center"
+            prop="price"
             show-overflow-tooltip
         ></el-table-column>
         <el-table-column
-            label="用户角色"
+            label="商品进价"
             align="center"
-            prop="roleName"
+            prop="purchasePrice"
             show-overflow-tooltip
         ></el-table-column>
         <el-table-column
-            label="创建时间"
+            label="商品图片"
             align="center"
-            prop="createTime"
+            prop="image"
             show-overflow-tooltip
-        ></el-table-column>
+        >
+          <template #default="scope">
+            <el-image :src="scope.row.image"></el-image>
+          </template>
+        </el-table-column>
         <el-table-column
-            label="更新时间"
+            label="商品状态"
             align="center"
-            prop="updateTime"
+            prop="status"
+            show-overflow-tooltip
+        >
+          <template #default="scope">
+            <el-tag
+                :type="scope.row.status == 0 ? '' : 'success'"
+                disable-transitions
+            >{{ scope.row.status == 1 ? '已上架' : '已下架' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+            label="商品库存"
+            align="center"
+            prop="num"
             show-overflow-tooltip
         ></el-table-column>
         <el-table-column label="操作" width="300px" align="center">
           <template #="{ row, $index }">
-            <el-button size="small" icon="User">分配角色</el-button>
-            <el-button type="primary" size="small" icon="Edit">编辑
+            <el-button type="primary" size="small" :icon="Edit">编辑
             </el-button>
             <el-popconfirm :title="`你确定删除${row.username}`" width="260px">
               <template #reference>
-                <el-button type="danger" size="small" icon="Delete">删除</el-button>
+                <el-button type="danger" size="small" :icon="Delete">删除</el-button>
               </template>
             </el-popconfirm>
           </template>
@@ -147,7 +179,7 @@ const addUser = () => {
     </el-card>
     <el-drawer v-model="drawer">
       <template #header>
-        <h4>{{ shopParams.id ? '更新用户' : '添加用户' }}</h4>
+        <h4>{{ spuParams.id ? '更新用户' : '添加用户' }}</h4>
       </template>
       <template #default>
         <el-form ref="formRef">

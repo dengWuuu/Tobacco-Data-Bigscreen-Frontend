@@ -4,7 +4,8 @@ export enum ModuleTypeEnum {
     PROJECT = 'project',
     SHOP = 'shop',
     SPU_TYPE = 'spu_type',
-    EMPLOYEE = 'sys-user'
+    EMPLOYEE = 'sys-user',
+    SPU = 'spu'
 }
 
 // 请求结果集
