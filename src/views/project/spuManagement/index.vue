@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import {ref, onMounted, reactive, nextTick} from 'vue'
-import {reqSpuList} from "@/api/spu";
+import {reqAddOrUpdateSpu, reqSpuList} from "@/api/spu";
 import {httpErrorHandle} from "@/utils";
 import {Spu, Spus, SpuResponseData} from "@/api/spu/type";
 import {Edit, Delete} from '@element-plus/icons-vue'
+import {SpuTypeResponseData, SpuTypes} from "@/api/spu_type/type";
+import {reqAddOrUpdateSpuType, reqSpuTypeList} from "@/api/spu_type";
+import {ElMessage} from "element-plus";
 
 let pageNo = ref<number>(1)
 
@@ -12,16 +15,7 @@ let pageSize = ref<number>(5)
 let total = ref<number>(0)
 let drawer = ref<boolean>(false)
 
-let spuParams = reactive<Spu>({
-  id: '',
-  skuName: '',
-  type: 0,
-  price: 0,
-  purchasePrice: 0,
-  image: '',
-  status: 0,
-  num: 0,
-})
+let spuParams = reactive<Spu>({})
 
 // 表单中东非数据
 let spuArr = ref<Spus>([])
@@ -47,9 +41,13 @@ const getSpuList = async (pager = 1) => {
   }
   httpErrorHandle()
 }
+const handler = () => {
+  getSpuList()
+}
 // 挂载
 onMounted(() => {
   getSpuList()
+  getSpuTypeList()
 })
 
 const getSpuType = (typeId: number) => {
@@ -60,9 +58,92 @@ const getSpuType = (typeId: number) => {
     return '零食'
   }
 }
-
+const value = ref('')
 // 添加用户按钮功能
-const addUser = () => {
+const addSpu = () => {
+  drawer.value = true
+  Object.assign(spuParams, {})
+  nextTick(() => {
+    formRef.value.clearValidate('skuName')
+    formRef.value.clearValidate('type')
+    formRef.value.clearValidate('price')
+    formRef.value.clearValidate('purchasePrice')
+    formRef.value.clearValidate('image')
+    formRef.value.clearValidate('status')
+    formRef.value.clearValidate('num')
+  })
+}
+
+// 种类选择框
+const options = ref<SpuTypes>([])
+
+const getSpuTypeList = async () => {
+  let res = await reqSpuTypeList(
+      0,
+      0,
+      ""
+  );
+  console.log(res)
+  if (res && res.data) {
+    let data: SpuTypeResponseData = res.data
+    if (res.code === 200) {
+      options.value = data.spuTypes
+    }
+    return
+  }
+  httpErrorHandle()
+}
+
+const save = async () => {
+  formRef.value.validate()
+  let res: any = await reqAddOrUpdateSpu(spuParams)
+  if (res.code === 200) {
+    drawer.value = false
+    ElMessage({
+      type: 'success',
+      message: spuParams.id ? '更新成功' : '添加成功',
+    })
+    window.location.reload()
+  } else {
+    drawer.value = false
+    ElMessage({
+      type: 'error',
+      message: spuParams.id ? '更新失败' : '添加失败',
+    })
+  }
+}
+
+// 取消添加商铺的表单
+const cancel = () => {
+  drawer.value = false
+}
+
+
+import {Plus} from '@element-plus/icons-vue'
+import type {UploadProps} from 'element-plus'
+
+const handleSuccess = (res: { code: number; data: { fileurl: string | undefined; }; msg: any; }) => {
+  if (res.code === 200) {
+    ElMessage({
+      type: 'success',
+      message: '上传成功'
+    })
+    spuParams.image = res.data.fileurl
+  } else {
+    ElMessage({
+      type: 'warning',
+      message: res.msg
+    })
+  }
+}
+
+
+const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
+  if (rawFile.size / 1024 / 1024 > 2) {
+    ElMessage.error('Avatar picture size can not exceed 2MB!')
+    return false
+  }
+  return true
 }
 </script>
 <template>
@@ -70,8 +151,8 @@ const addUser = () => {
 
     <el-card style="height: 80px">
       <el-form :inline="true" class="form">
-        <el-form-item label="用户名:">
-          <el-input placeholder="请你输入搜索用户名"></el-input>
+        <el-form-item label="商品名:">
+          <el-input placeholder="请你输入搜索商品名"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" size="default">搜索</el-button>
@@ -80,8 +161,8 @@ const addUser = () => {
       </el-form>
     </el-card>
     <el-card style="margin: 10px 0">
-      <el-button type="primary" size="default" @click="addUser">
-        添加用户
+      <el-button type="primary" size="default" @click="addSpu">
+        添加商品
       </el-button>
       <el-button
           type="danger"
@@ -174,38 +255,89 @@ const addUser = () => {
           :background="true"
           layout="prev, pager, next, jumper, -> , sizes, total"
           :total="total"
-
+          @current-change="getSpuList"
+          @size-change="handler"
       />
     </el-card>
     <el-drawer v-model="drawer">
       <template #header>
-        <h4>{{ spuParams.id ? '更新用户' : '添加用户' }}</h4>
+        <h4>{{ spuParams.id ? '更新商品' : '添加商品' }}</h4>
       </template>
       <template #default>
         <el-form ref="formRef">
-          <el-form-item label="用户姓名" prop="username">
+          <el-form-item label="商品名字" prop="skuName">
             <el-input
-                placeholder="请您输入用户姓名"
-
+                placeholder="请您输入商品名字"
+                v-model="spuParams.skuName"
             ></el-input>
           </el-form-item>
-          <el-form-item label="用户昵称" prop="name">
+          <el-form-item label="商品种类" prop="type">
+            <el-select
+                placeholder="选择商品种类"
+                v-model="spuParams.type"
+            >
+              <el-option
+                  v-for="item in options"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="商品价格" prop="price">
             <el-input
-                placeholder="请您输入用户昵称"
-
+                placeholder="请您输入商品价格"
+                v-model="spuParams.price"
             ></el-input>
           </el-form-item>
-          <el-form-item label="用户密码" prop="password">
+          <el-form-item label="商品进货价" prop="purchasePrice">
             <el-input
-                placeholder="请您输入用户密码"
+                placeholder="请您输入商品进货价"
+                v-model="spuParams.purchasePrice"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="商品图片" prop="image">
+            <el-upload
+                class="avatar-uploader"
+                action="http://localhost:8083/api/project/upload"
+                name="object"
+                :show-file-list="false"
+                :on-success="handleSuccess"
+                :before-upload="beforeUpload"
+            >
+              <img v-if="spuParams.image" :src="spuParams.image" class="avatar"/>
+              <el-icon v-else class="avatar-uploader-icon">
+                <Plus/>
+              </el-icon>
+            </el-upload>
+
+
+          </el-form-item>
+          <el-form-item label="商品状态" prop="status">
+            <el-select v-model="spuParams.status" placeholder="选择商品状态">
+              <el-option
+                  label="已上架"
+                  value=1
+              />
+              <el-option
+                  label="未上架"
+                  value=0
+              />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="商品库存" prop="num">
+            <el-input
+                placeholder="请您输入商品库存"
+                v-model="spuParams.num"
             ></el-input>
           </el-form-item>
         </el-form>
       </template>
       <template #footer>
         <div style="flex: auto">
-          <el-button>取消</el-button>
-          <el-button type="primary">确定</el-button>
+          <el-button @click="cancel">取消</el-button>
+          <el-button type="primary" @click="save">确定</el-button>
         </div>
       </template>
     </el-drawer>
@@ -238,10 +370,39 @@ const addUser = () => {
     </el-drawer>
   </div>
 </template>
+
+
 <style lang="scss" scoped>
 .form {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
 }
 </style>
